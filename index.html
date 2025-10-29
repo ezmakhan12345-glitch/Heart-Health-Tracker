@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<title>Heart Health Tracker-Powered by Lifezen Pharmaceuticals</title>
+
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --background-image: url('rosivraaabg.jpg');
+    --card:#ffffff;
+    --accent:#e84a5f;
+    --accent-2:#ff9f43;
+    --muted:#6b7280;
+    --success:#2bb673;
+    --danger:#ef4b4b;
+    --yellow:#f2c94c;
+  }
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background-image:url(rosivraaabg.jpg); margin:0; padding:20px; color:#111;}
+  .wrap{max-width:1800px;margin:0 auto;}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+  header h1{margin:0;font-size:20px;color:whitesmoke}
+  /* Increased dashboard width to 600px and adjusted grid for better screen fit */
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr 600px;gap:18px;}
+  .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(20,20,40,0.06);}
+  label{display:block;font-weight:600;margin-top:12px;font-size:13px}
+  input[type="number"], select, input[type="text"]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ef;margin-top:6px;font-size:14px}
+  .row{display:flex;gap:12px}
+  .small{width:50%}
+  .muted{color:var(--muted);font-size:13px;margin-top:6px;}
+  .btn{display:inline-block;padding:10px 14px;border-radius:8px;background:var(--accent);color:#fff;border:0;font-weight:700;cursor:pointer;margin-top:14px}
+  .results{display:flex;flex-direction:column;gap:12px}
+  /* Made circles responsive with flexible sizing */
+  .circles{display:flex;gap:12px;align-items:center;justify-content:center;padding:12px;flex-wrap:wrap;}
+  .circle-wrap{width:130px;text-align:center;flex-shrink:0;}
+  .circle-label{font-size:13px;margin-top:8px}
+  .percent-big{font-weight:800;font-size:28px}
+  .alert{padding:10px;border-radius:8px;color:#fff;font-weight:700}
+  .alert.low{background:var(--success)}
+  .alert.mod{background:var(--yellow);color:#111}
+  .alert.high{background:var(--danger)}
+  footer{margin-top:16px;font-size:13px;color:var(--muted)}
+  .hint{font-size:13px;color:var(--muted);margin-top:8px}
+  .tiny{font-size:12px;color:var(--muted)}
+  /* SVG circle styles */
+  .svg-wrap{transform:rotate(-90deg)}
+  .bgcircle{stroke:#eee;stroke-width:10;fill:none}
+  .fgcircle{stroke:var(--accent);stroke-width:10;stroke-linecap:round;fill:none;transition:stroke-dashoffset 900ms cubic-bezier(.22,.9,.29,1)}
+  .fg-yellow{stroke:var(--yellow)}
+  .fg-success{stroke:var(--success)}
+  .fg-danger{stroke:var(--danger)}
+  /* Updated responsive breakpoints for better layout on all screen sizes */
+  @media (max-width:1600px){
+    .grid{grid-template-columns:1fr 1fr 1fr 550px;}
+  }
+  @media (max-width:1400px){
+    .grid{grid-template-columns:1fr 1fr; }
+    .circle-wrap{width:120px}
+  }
+  @media (max-width:1000px){
+    .grid{grid-template-columns:1fr;}
+    .circles{gap:10px;}
+    .circle-wrap{width:110px}
+  }
+  @media (max-width:768px){
+    .grid{grid-template-columns:1fr;}
+    .circles{gap:8px;}
+    .circle-wrap{width:100px}
+    .percent-big{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Heart Health Tracker- Powered by Lifezen Pharmaceuticals</h1>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- Section 1: Vitals -->
+    <div>
+      <div class="card">
+        <h3>Check Your Vitals</h3>
+        <div class="muted">Please enter the latest values from your device or lab report. Units are shown.</div>
+        <label>Systolic Blood Pressure (mmHg)</label>
+        <input id="sys" type="number" min="50" max="260" placeholder="e.g., 120">
+
+        <label>Diastolic Blood Pressure (mmHg)</label>
+        <input id="dia" type="number" min="30" max="160" placeholder="e.g., 80">
+
+        <label>Resting Heart Rate (BPM)</label>
+        <input id="bpm" type="number" min="20" max="220" placeholder="e.g., 72">
+
+        <label>Body Mass Index (BMI) (kg/m²)</label>
+        <input id="bmi" type="number" step="0.1" min="10" max="60" placeholder="e.g., 26.4">
+
+        <label>Total Cholesterol (mg/dL)</label>
+        <input id="tch" type="number" min="50" max="500" placeholder="e.g., 190">
+
+        <label>LDL (mg/dL)</label>
+        <input id="ldl" type="number" min="20" max="400" placeholder="e.g., 120">
+
+        <label>HDL (mg/dL)</label>
+        <input id="hdl" type="number" min="10" max="150" placeholder="e.g., 45">
+      </div>
+    </div>
+
+    <!-- Section 2: Lifestyle -->
+    <div>
+      <div class="card">
+        <h3>Track Your Lifestyle</h3>
+        <div class="muted">Quick lifestyle inputs — these affect heart risk and adherence.</div>
+
+        <label>Are you exercising regularly?</label>
+        <select id="exer">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+
+        <label>If yes, how many days per week do you exercise or walk? (days/week)</label>
+        <input id="exdays" type="number" min="0" max="7" placeholder="e.g., 3">
+
+        <label>How many times per week do you eat fried or fast food? (times/week)</label>
+        <input id="fried" type="number" min="0" max="21" placeholder="e.g., 4">
+
+        <label>How many hours of sleep do you get on average each night?</label>
+        <input id="sleep" type="number" min="0" max="24" placeholder="e.g., 6">
+
+        <label>Do you currently smoke?</label>
+        <select id="smoke">
+          <option value="0">No</option>
+          <option value="1">Occasionally</option>
+          <option value="2">Yes, daily</option>
+        </select>
+
+        <label>Do you consume alcohol?</label>
+        <select id="alc">
+          <option value="0">No</option>
+          <option value="1">Occasionally</option>
+          <option value="2">Regularly</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Section 3: Medication Adherence -->
+    <div>
+      <div class="card">
+        <h3>Medication Adherence</h3>
+        <div class="muted">Medication compliance is critical for heart health management.</div>
+
+        <label>Are you taking your medication on time every day?</label>
+        <select id="medOnTime">
+          <option value="0">Yes</option>
+          <option value="1">No</option>
+        </select>
+
+        <label>Have you experienced any side effects?</label>
+        <input id="sideEffects" type="text" placeholder="Describe any side effects...">
+
+        <label>Do you ever skip or forget to take your medicine?</label>
+        <select id="medSkip">
+          <option value="0">No</option>
+          <option value="1">Sometimes</option>
+          <option value="2">Yes, frequently</option>
+        </select>
+
+        <div style="margin-top:12px">
+          <button id="calc" class="btn">Generate Risk Scores</button>
+          <button id="reset" class="btn" style="background:#6b7280">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Dashboard -->
+    <aside>
+      <div class="card">
+        <h3>Live Risk Dashboard</h3>
+        <div class="muted">Animated risk indicators — Vitals, Lifestyle, Adherence + Overall</div>
+
+        <div class="circles" style="margin-top:12px">
+          <div class="circle-wrap card" style="padding:12px">
+            <div class="svg-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle class="bgcircle" cx="60" cy="60" r="45"></circle>
+                <circle id="vitalsCircle" class="fgcircle" cx="60" cy="60" r="45" stroke-dasharray="282.6" stroke-dashoffset="282.6"></circle>
+              </svg>
+            </div>
+            <div class="circle-label">Vitals</div>
+            <div id="vitalsPct" class="tiny" style="margin-top:6px">-- %</div>
+          </div>
+
+          <div class="circle-wrap card" style="padding:12px">
+            <div class="svg-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle class="bgcircle" cx="60" cy="60" r="45"></circle>
+                <circle id="lifestyleCircle" class="fgcircle fg-yellow" cx="60" cy="60" r="45" stroke-dasharray="282.6" stroke-dashoffset="282.6"></circle>
+              </svg>
+            </div>
+            <div class="circle-label">Lifestyle</div>
+            <div id="lifestylePct" class="tiny" style="margin-top:6px">-- %</div>
+          </div>
+
+          <div class="circle-wrap card" style="padding:12px">
+            <div class="svg-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle class="bgcircle" cx="60" cy="60" r="45"></circle>
+                <circle id="emotCircle" class="fgcircle fg-success" cx="60" cy="60" r="45" stroke-dasharray="282.6" stroke-dashoffset="282.6"></circle>
+              </svg>
+            </div>
+            <div class="circle-label">Lack of Adherence</div>
+            <div id="emotPct" class="tiny" style="margin-top:6px">-- %</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:12px">
+          <div style="display:inline-block;background:var(--card);padding:16px;border-radius:12px;border:2px solid #e6e9ef;">
+            <div class="percent-big" id="overallPct">-- %</div>
+            <div class="tiny muted">Overall Risk</div>
+            <div id="riskAlert" style="margin-top:10px"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <strong>Interpretation</strong>
+          <ul style="margin:8px 0 0 18px;color:var(--muted);font-size:13px">
+            <li>Low: &lt; 20% — maintain lifestyle and follow-up</li>
+            <li>Moderate: 20–50% — closer monitoring and lifestyle modification</li>
+            <li>High: &gt; 50% — urgent clinical follow-up recommended</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+</div>
+
+<script>
+  const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+
+  function scoreVitals(sys, dia, bpm, bmi, tch, ldl, hdl) {
+    const scores = [];
+    let abnormalCount = 0;
+    let severeCount = 0;
+
+    // Systolic BP scoring
+    if (sys) {
+      sys = Number(sys);
+      if (sys < 120) scores.push(10);
+      else if (sys < 130) scores.push(15);
+      else if (sys < 140) scores.push(35);
+      else if (sys < 160) scores.push(55);
+      else scores.push(75);
+      if (sys >= 130) abnormalCount++;
+      if (sys >= 160) severeCount++;
+    }
+
+    // Diastolic BP scoring
+    if (dia) {
+      dia = Number(dia);
+      if (dia < 80) scores.push(10);
+      else if (dia < 90) scores.push(20);
+      else if (dia < 100) scores.push(40);
+      else scores.push(70);
+      if (dia >= 85) abnormalCount++;
+      if (dia >= 100) severeCount++;
+    }
+
+    // Heart rate scoring
+    if (bpm) {
+      bpm = Number(bpm);
+      if (bpm >= 55 && bpm <= 80) scores.push(10);
+      else if (bpm < 55 || bpm > 100) {
+        scores.push(60);
+        abnormalCount++;
+        severeCount++;
+      } else scores.push(25);
+    }
+
+    // BMI scoring
+    if (bmi) {
+      bmi = Number(bmi);
+      if (bmi >= 18.5 && bmi < 25) scores.push(10);
+      else if (bmi < 18.5 || bmi >= 25) {
+        scores.push(bmi >= 30 ? 50 : 30);
+        abnormalCount++;
+        if (bmi >= 35) severeCount++;
+      }
+    }
+
+    // Total Cholesterol scoring
+    if (tch) {
+      tch = Number(tch);
+      if (tch <= 200) scores.push(10);
+      else if (tch <= 240) scores.push(25);
+      else {
+        scores.push(60);
+        abnormalCount++;
+        severeCount++;
+      }
+    }
+
+    // LDL scoring
+    if (ldl) {
+      ldl = Number(ldl);
+      if (ldl < 100) scores.push(10);
+      else if (ldl < 130) scores.push(20);
+      else if (ldl < 160) scores.push(40);
+      else if (ldl < 190) scores.push(60);
+      else scores.push(75);
+      if (ldl > 160) abnormalCount++;
+      if (ldl > 190) severeCount++;
+    }
+
+    // HDL scoring
+    if (hdl) {
+      hdl = Number(hdl);
+      if (hdl >= 60) scores.push(10);
+      else if (hdl >= 50) scores.push(15);
+      else if (hdl >= 40) scores.push(30);
+      else {
+        scores.push(50);
+        abnormalCount++;
+        if (hdl < 35) severeCount++;
+      }
+    }
+
+    // Calculate final vitals risk based on abnormality count
+    if (scores.length === 0) return 0;
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    
+    if (severeCount >= 2) return Math.round(clamp(avg + 15, 0, 100));
+    if (abnormalCount >= 3) return Math.round(clamp(avg + 10, 0, 100));
+    if (abnormalCount >= 1) return Math.round(clamp(avg, 0, 100));
+    return Math.round(clamp(avg, 0, 100));
+  }
+
+  function scoreLifestyle(exer, exdays, fried, sleep, smoke, alc) {
+    const scores = [];
+    let poorHabits = 0;
+
+    // Exercise scoring
+    exer = Number(exer);
+    exdays = Number(exdays) || 0;
+    if (exer === 1 && exdays >= 3) scores.push(10);
+    else if (exer === 1 && exdays >= 1) scores.push(25);
+    else {
+      scores.push(50);
+      poorHabits++;
+    }
+
+    // Fast food scoring
+    fried = Number(fried) || 0;
+    if (fried <= 1) scores.push(10);
+    else if (fried <= 3) scores.push(25);
+    else if (fried <= 6) scores.push(40);
+    else {
+      scores.push(60);
+      poorHabits++;
+    }
+
+    // Sleep scoring
+    sleep = Number(sleep);
+    if (sleep >= 7 && sleep <= 9) scores.push(10);
+    else if (sleep >= 5 && sleep < 7) scores.push(30);
+    else if (sleep < 5) {
+      scores.push(50);
+      poorHabits++;
+    } else if (sleep > 9) scores.push(25);
+
+    // Smoking scoring
+    smoke = Number(smoke);
+    if (smoke === 0) scores.push(10);
+    else if (smoke === 1) scores.push(35);
+    else {
+      scores.push(65);
+      poorHabits++;
+    }
+
+    // Alcohol scoring
+    alc = Number(alc);
+    if (alc === 0) scores.push(10);
+    else if (alc === 1) scores.push(25);
+    else {
+      scores.push(45);
+      poorHabits++;
+    }
+
+    if (scores.length === 0) return 0;
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    
+    // Boost risk if multiple poor habits
+    if (poorHabits >= 3) return Math.round(clamp(avg + 15, 0, 100));
+    if (poorHabits >= 2) return Math.round(clamp(avg + 5, 0, 100));
+    return Math.round(clamp(avg, 0, 100));
+  }
+
+  function scoreAdherence(medOnTime, medSkip) {
+    const scores = [];
+
+    medOnTime = Number(medOnTime);
+    if (medOnTime === 0) scores.push(12);
+    else scores.push(50);
+
+    medSkip = Number(medSkip);
+    if (medSkip === 0) scores.push(12);
+    else if (medSkip === 1) scores.push(35);
+    else scores.push(65);
+
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    return Math.round(clamp(avg, 0, 100));
+  }
+
+  const CIRCUM = 2 * Math.PI * 45;
+  function setCirclePercent(el, pct, colorClass) {
+    const offset = CIRCUM * (1 - pct/100);
+    el.style.strokeDashoffset = offset;
+  }
+
+  function riskLabelClass(pct) {
+    if (pct < 20) return {label:'Low', cls:'alert low', text:'Low risk — continue regular follow-up.'};
+    if (pct < 50) return {label:'Moderate', cls:'alert mod', text:'Moderate risk — consider lifestyle changes and closer monitoring.'};
+    return {label:'High', cls:'alert high', text:'High risk — recommend urgent clinical review.'};
+  }
+
+  document.getElementById('calc').addEventListener('click', function(){
+    const sys = document.getElementById('sys').value.trim();
+    const dia = document.getElementById('dia').value.trim();
+    const bpm = document.getElementById('bpm').value.trim();
+    const bmi = document.getElementById('bmi').value.trim();
+    const tch = document.getElementById('tch').value.trim();
+    const ldl = document.getElementById('ldl').value.trim();
+    const hdl = document.getElementById('hdl').value.trim();
+
+    const vitalsPct = scoreVitals(sys, dia, bpm, bmi, tch, ldl, hdl);
+
+    const exer = document.getElementById('exer').value;
+    const exdays = document.getElementById('exdays').value;
+    const fried = document.getElementById('fried').value;
+    const sleep = document.getElementById('sleep').value;
+    const smoke = document.getElementById('smoke').value;
+    const alc = document.getElementById('alc').value;
+
+    const lifestylePct = scoreLifestyle(exer, exdays, fried, sleep, smoke, alc);
+
+    const medOnTime = document.getElementById('medOnTime').value;
+    const medSkip = document.getElementById('medSkip').value;
+
+    const medPct = scoreAdherence(medOnTime, medSkip);
+
+    const overall = Math.round(clamp( ( (vitalsPct*0.5) + (lifestylePct*0.3) + (medPct*0.2) ), 0, 100));
+
+    const vitEl = document.getElementById('vitalsCircle');
+    const lifeEl = document.getElementById('lifestyleCircle');
+    const emoEl = document.getElementById('emotCircle');
+
+    [vitEl, lifeEl, emoEl].forEach(el => {
+      el.style.strokeDasharray = CIRCUM;
+      el.style.strokeDashoffset = CIRCUM;
+    });
+
+    setTimeout(()=> {
+      setCirclePercent(vitEl, vitalsPct);
+      setCirclePercent(lifeEl, lifestylePct);
+      setCirclePercent(emoEl, medPct);
+    }, 100);
+
+    document.getElementById('vitalsPct').innerText = vitalsPct + ' %';
+    document.getElementById('lifestylePct').innerText = lifestylePct + ' %';
+    document.getElementById('emotPct').innerText = medPct + ' %';
+    document.getElementById('overallPct').innerText = overall + ' %';
+
+    const r = riskLabelClass(overall);
+    const alertDiv = document.getElementById('riskAlert');
+    alertDiv.className = r.cls;
+    alertDiv.innerText = r.label + ' — ' + r.text;
+
+    if (window.innerWidth < 900) {
+      document.querySelector('aside').scrollIntoView({behavior:'smooth'});
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    document.querySelectorAll('input[type=number]').forEach(i=>i.value='');
+    document.querySelectorAll('input[type=text]').forEach(i=>i.value='');
+    document.querySelectorAll('select').forEach(s=>s.selectedIndex=0);
+    document.getElementById('vitalsPct').innerText='-- %';
+    document.getElementById('lifestylePct').innerText='-- %';
+    document.getElementById('emotPct').innerText='-- %';
+    document.getElementById('overallPct').innerText='-- %';
+    document.getElementById('riskAlert').className='';
+    document.getElementById('riskAlert').innerText='';
+    const els = [document.getElementById('vitalsCircle'),document.getElementById('lifestyleCircle'),document.getElementById('emotCircle')];
+    els.forEach(el => el.style.strokeDashoffset = CIRCUM);
+  });
+
+  window.addEventListener('load', function(){
+    document.getElementById('vitalsCircle').style.strokeDasharray = CIRCUM;
+    document.getElementById('lifestyleCircle').style.strokeDasharray = CIRCUM;
+    document.getElementById('emotCircle').style.strokeDasharray = CIRCUM;
+    document.getElementById('vitalsCircle').style.strokeDashoffset = CIRCUM;
+    document.getElementById('lifestyleCircle').style.strokeDashoffset = CIRCUM;
+    document.getElementById('emotCircle').style.strokeDashoffset = CIRCUM;
+  });
+</script>
+</body>
+</html>
